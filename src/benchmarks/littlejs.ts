@@ -28,6 +28,8 @@ setCanvasClearColor(new Color(1, 1, 1, 1));
 setShowSplashScreen(false);
 glSetAntialias(true);
 
+const root = document.body.appendChild(document.createElement('div'));
+
 await engineInit(
     () => { new Gear(); },
     () => {},
@@ -35,5 +37,7 @@ await engineInit(
     () => {},
     () => {},
     ['./initial/generated/texturePackImages.webp'],
-    document.body,
+    root,
 );
+// engineInit overwrites the root's cssText, so style it afterwards.
+root.style.cssText = 'position:relative;width:640px;height:360px;overflow:hidden;background:#fff';

@@ -26,10 +26,11 @@ Cold means empty HTTP cache, not a new browser process, OS, DNS cache or GPU dri
 ## Network profiles
 
 - Unthrottled: no artificial latency or bandwidth limit.
-- Broadband: 20 Mbps download, 5 Mbps upload, 20 ms request latency.
-- Mobile: 4 Mbps download, 1 Mbps upload, 80 ms request latency.
+- Fast 4G: 8.1 Mbit/s download, 1.4 Mbit/s upload, 165 ms request latency.
+- Slow 4G: 1.4 Mbit/s download, 675 kbit/s upload, 562.5 ms request latency.
+- 3G: 400 kbit/s download, 400 kbit/s upload, 2000 ms request latency.
 
-Profiles use Chromium DevTools network emulation, not simulated UI delays. No CPU throttling. The server gzips HTML, JS, CSS and JSON. These profiles are explicit laboratory settings, not claims about every real broadband/mobile connection.
+Profiles use Chromium DevTools network emulation, not simulated UI delays. No CPU throttling. The server gzips HTML, JS, CSS and JSON. These profiles are explicit laboratory settings, matching Chrome DevTools' built-in presets, not claims about every real connection.
 
 The local Node server is required: ordinary static webpages cannot clear browser HTTP cache or apply network throttling. It listens on loopback and permits only same-origin run requests with fixed settings and local benchmark destinations. Cancel closes the controlled browser and preserves partial results. Missing browsers and engine failures are shown as errors, not zero scores.
 

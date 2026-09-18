@@ -2,8 +2,9 @@ import { chromium } from '@playwright/test';
 
 export const profiles = {
     none: { label: 'Unthrottled', latency: 0, downloadThroughput: -1, uploadThroughput: -1 },
-    broadband: { label: '20 Mbps down / 5 Mbps up / 20 ms latency', latency: 20, downloadThroughput: 20e6 / 8, uploadThroughput: 5e6 / 8 },
-    mobile: { label: '4 Mbps down / 1 Mbps up / 80 ms latency', latency: 80, downloadThroughput: 4e6 / 8, uploadThroughput: 1e6 / 8 },
+    fast4g: { label: 'Fast 4G', latency: 165, downloadThroughput: 8.1e6 / 8, uploadThroughput: 1.4e6 / 8 },
+    slow4g: { label: 'Slow 4G', latency: 562.5, downloadThroughput: 1.4e6 / 8, uploadThroughput: 675e3 / 8 },
+    '3g': { label: '3G', latency: 2000, downloadThroughput: 400e3 / 8, uploadThroughput: 400e3 / 8 },
 };
 
 export async function runBenchmarks({ baseURL, runs, profile, emit, signal }) {

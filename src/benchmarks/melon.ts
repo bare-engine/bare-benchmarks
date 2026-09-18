@@ -18,7 +18,7 @@ await loader.preload([
 ], undefined, false);
 
 // AssetPack emits the TexturePacker hash schema; melonJS sniffs meta.app and expects the array flavour.
-const packed = loader.getJSON('gearAtlas');
+const packed = loader.getJSON('gearAtlas') as unknown as { meta: Record<string, unknown>; frames: Record<string, object> };
 const atlasData = {
     ...packed,
     meta: { ...packed.meta, app: 'texturepacker' },
