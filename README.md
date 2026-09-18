@@ -1,37 +1,47 @@
 ﻿# Engine benchmarks
 
-Production startup benchmarks for Bare, PixiJS 8.21.0 and Phaser 4.2.1 (npm latest installed September 18, 2026). Bare remains the existing Git dependency; package-lock.json records its revision.
+Production startup benchmarks for Bare, PixiJS 8.21.0 and Phaser 4.2.1. Bare remains the existing Git dependency; package-lock.json records its revision.
 
-Run `npm start`, then open the printed localhost URL. The index automatically measures 10 samples per engine and shows median, min–max and sample counts. Select 3, 10 or 30 samples to rerun. Download results exports the raw samples as JSON.
+Run `npm install`, then `npm start` and open http://127.0.0.1:4173. Requires installed Microsoft Edge. Set BENCHMARK_BROWSER=chrome to use installed Chrome instead. Select a sample count and network profile, then click Run benchmarks. Tests run in a separate local headless browser; your dashboard browser is only the controller. The results use horizontal bars for quick comparison while retaining exact median and min–max values.
 
-- `npm run build`: build all production pages into dist/.
-- `npm run preview`: serve existing production builds.
-- `npm run dev`: build and serve production benchmarks; rebuild after changes.
+- `npm run build`: all production pages into dist/.
+- `npm run preview`: serve existing production builds and the controlled runner.
+- `npm run dev`: build and serve; rebuild after source changes.
 - `npm run dev:bare`: original Bare development server.
 - `npm run typecheck`: check application TypeScript.
-- `npm test`: browser verification using installed Microsoft Edge; build first.
+- `npm test`: browser tests including cold-cache misses, network profile, frame reporting, bars and cancellation.
 
-Use an HTTP server, not file://.
+## First rendered frame
 
-## Measurement
+All three engines load the same gear atlas, draw a centered 122 × 122 sprite on a 640 × 360 WebGL canvas at resolution 1 with antialiasing, and rotate it at 60 degrees/second. Bare retains its standard production bootstrap and parallel initial-asset loading; peers use native atlas loaders.
 
-Each engine loads the same one-image gear atlas, draws a centered 122 × 122 sprite on a 640 × 360 WebGL canvas at resolution 1, and rotates it at 60 degrees/second. Antialiasing is enabled. Bare keeps its engine-provided production pipeline, bootstrap and initial-asset preloads. PixiJS and Phaser use their native atlas loaders. The task is equivalent; engine boot paths remain different.
+All report from their normal render loops after drawing the image. A shared microtask waits until the full render stack has returned (including Bare's flush), then calls WebGL finish() once to wait for GPU completion. The primary metric is navigation to the first GPU-completed frame, including that synchronization overhead. Exported samples also contain submittedMs, measured before finish(). Neither timestamp indicates physical monitor presentation. These numbers are not directly comparable to the previous submission-only benchmark.
 
-Each sample navigates a fresh iframe. Only one engine runs at a time, and order rotates each round. performance.now() measures from the child navigation time origin to the first render submission, including HTML/script loading, evaluation, initialization and image loading. A microtask after the render callback includes the complete render stack, including Bare's final flush. This does not measure GPU completion or physical display presentation.
+## Cold cache
 
-Browser caching stays enabled: first visits may be cold; subsequent samples are warm. The iframe query changes, but asset URLs remain stable. This is not a controlled cold-cache test. Keep the tab visible; hiding it aborts the run. Failed engines time out after 30 seconds without inventing results.
+Every sample uses a fresh browser context. HTTP cache is explicitly cleared and service workers are blocked before the measured navigation, so code, images and other resources must load on every run. Each context is disposed after its sample. Engine order rotates each round.
 
-Render time and bundle size are reserved for later benchmarks.
+Cold means empty HTTP cache, not a new browser process, OS, DNS cache or GPU driver. Browser/JIT/driver reuse can still affect measurements. Context isolation prevents another engine's shared assets from warming a sample.
+
+## Network profiles
+
+- Unthrottled: no artificial latency or bandwidth limit.
+- Broadband: 20 Mbps download, 5 Mbps upload, 20 ms request latency.
+- Mobile: 4 Mbps download, 1 Mbps upload, 80 ms request latency.
+
+Profiles use Chromium DevTools network emulation, not simulated UI delays. No CPU throttling. The server gzips HTML, JS, CSS and JSON. These profiles are explicit laboratory settings, not claims about every real broadband/mobile connection.
+
+The local Node server is required: ordinary static webpages cannot clear browser HTTP cache or apply network throttling. It listens on loopback and permits only same-origin run requests with fixed settings and local benchmark destinations. Cancel closes the controlled browser and preserves partial results. Missing browsers and engine failures are shown as errors, not zero scores.
 
 ## Files
 
-- index.html and src/dashboard.*: runner and results UI.
-- src/game.ts: original Bare scene with first-frame reporting.
-- src/benchmarks/: PixiJS, Phaser and shared reporting.
-- scripts/build.mjs: builds dashboard and peers, builds Bare separately, copies the same atlas to peers.
-- dist/startup/{bare,pixi,phaser}/index.html: standalone production scenes.
-- tests/startup.spec.mjs: verifies engine reporting, canvas sizes, aggregation and export; writes screenshots and raw JSON to test-results/.
+- index.html and src/dashboard.*: runner UI and cold-cache results.
+- src/game.ts and src/benchmarks/: engine scenes and shared first-frame reporting.
+- scripts/build.mjs: production builds and shared atlas copies.
+- scripts/serve.mjs: local static server and streaming run API.
+- scripts/runner.mjs: browser isolation, cache control and throttling.
+- tests/startup.spec.mjs: end-to-end verification; writes screenshots and JSON under test-results/.
 
-skipLibCheck avoids conflicting engine shader declarations and upstream Phaser declaration errors; application TypeScript remains checked.
+Render time and bundle size remain future benchmarks. skipLibCheck avoids upstream engine declaration conflicts while application TypeScript remains checked.
 
-API references: [PixiJS Application](https://pixijs.com/8.x/guides/components/application), [Phaser loader](https://docs.phaser.io/phaser/concepts/loader).
+References: [DevTools Network protocol](https://chromedevtools.github.io/devtools-protocol/tot/Network/), [Playwright CDP sessions](https://playwright.dev/docs/api/class-cdpsession).

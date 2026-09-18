@@ -11,8 +11,7 @@ async function start() {
     gear.anchor.set(0.5);
     gear.position.set(320, 180);
     app.stage.addChild(gear);
-    app.render();
-    report('pixi');
+    app.renderer.runners.postrender.add({ postrender: () => report('pixi') });
     app.ticker.add((ticker) => { gear.rotation += ticker.deltaMS * Math.PI / 3000; });
     app.start();
 }

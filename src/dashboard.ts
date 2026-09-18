@@ -1,65 +1,70 @@
-import './dashboard.css';
+﻿import './dashboard.css';
 declare const __VERSIONS__: Record<string, string>;
 const engines = ['bare', 'pixi', 'phaser'];
 const names: Record<string, string> = { bare: 'Bare', pixi: 'PixiJS', phaser: 'Phaser' };
 const $ = (id: string) => document.getElementById(id)!;
 const run = $('run') as HTMLButtonElement;
-const download = $('download') as HTMLButtonElement;
-const samples: Record<string, number[]> = {};
-const errors: Record<string, string> = {};
+const cancel = $('cancel') as HTMLButtonElement;
+type Sample = { engine: string; ms: number; submittedMs: number; round: number };
+let samples: Sample[] = [];
+let metadata: Record<string, unknown> = {};
+let failures: string[] = [];
+let controller: AbortController | undefined;
 const median = (values: number[]) => { const s = [...values].sort((a,b) => a-b); return (s[Math.floor(s.length/2)] + s[Math.floor((s.length-1)/2)]) / 2; };
 function draw() {
-    const max = Math.max(...engines.map(e => samples[e]?.length ? median(samples[e]) : 0), 1);
-    $('results').innerHTML = engines.map(e => {
-        const s = samples[e] || [];
-        return `<tr><td><strong>${names[e]}</strong><small>${__VERSIONS__[e]}</small></td><td class="time">${s.length ? median(s).toFixed(1) + ' <small>ms</small>' : '—'}</td><td>${s.length ? Math.min(...s).toFixed(1) + '–' + Math.max(...s).toFixed(1) + ' ms' : '—'}</td><td>${s.length}${errors[e] ? ' · failed' : ''}</td><td><div class="bar" style="width:${s.length ? median(s)/max*100 : 0}%"></div></td></tr>`;
+    const medians = Object.fromEntries(engines.map(engine => {
+        const values = samples.filter(s => s.engine === engine).map(s => s.ms);
+        return [engine, values.length ? median(values) : 0];
+    }));
+    const longest = Math.max(...Object.values(medians), 1);
+    $('results').innerHTML = engines.map(engine => {
+        const values = samples.filter(s => s.engine === engine).map(s => s.ms);
+        const value = medians[engine];
+        const width = values.length ? Math.max(value / longest * 100, 2) : 0;
+        return `<tr><td><strong>${names[engine]}</strong><small>${__VERSIONS__[engine]}</small></td><td class="time">${values.length ? value.toFixed(1) + ' <small>ms</small>' : '—'}<small class="range">${values.length ? `${Math.min(...values).toFixed(1)}–${Math.max(...values).toFixed(1)} ms · ${values.length} samples` : 'Awaiting samples'}</small></td><td class="visual"><div class="track"><div class="bar" style="width:${width}%"></div></div></td></tr>`;
     }).join('');
 }
-function measure(engine: string): Promise<number> {
-    return new Promise((resolve, reject) => {
-        const frame = document.createElement('iframe');
-        frame.title = `${names[engine]} startup scene`;
-        let timer: ReturnType<typeof setTimeout>;
-        const cleanup = () => { clearTimeout(timer); window.removeEventListener('message', onMessage); document.removeEventListener('visibilitychange', onVisibility); frame.remove(); };
-        const onVisibility = () => { if (document.hidden) { cleanup(); reject(new Error('Tab hidden; run again with this tab visible.')); } };
-        const onMessage = (event: MessageEvent) => {
-            if (event.origin !== location.origin || event.source !== frame.contentWindow || event.data?.type !== 'startup-result' || event.data.engine !== engine) return;
-            if (!Number.isFinite(event.data.ms) || event.data.ms <= 0) return;
-            cleanup(); resolve(event.data.ms);
-        };
-        window.addEventListener('message', onMessage);
-        document.addEventListener('visibilitychange', onVisibility);
-        timer = setTimeout(() => { cleanup(); reject(new Error(`${names[engine]} timed out after 30 seconds. Check its standalone page and browser console.`)); }, 30000);
-        frame.src = `./startup/${engine}/index.html?run=${crypto.randomUUID()}`;
-        $('stage').replaceChildren(frame);
-    });
-}
 run.onclick = async () => {
-    if (document.hidden) return;
-    run.disabled = true; download.disabled = true;
-    const count = Number(($('runs') as HTMLSelectElement).value);
-    for (const e of engines) { samples[e] = []; delete errors[e]; }
-    draw();
-    let stopped = false;
-    for (let round = 0; round < count && !stopped; round++) {
-        for (let offset = 0; offset < engines.length; offset++) {
-            const engine = engines[(round + offset) % engines.length];
-            if (errors[engine]) continue;
-            $('status').textContent = `Running ${names[engine]} · round ${round+1} of ${count}`;
-            $('current').textContent = `${names[engine]} ${__VERSIONS__[engine]} · 640 × 360`;
-            try { samples[engine].push(await measure(engine)); }
-            catch (error) { errors[engine] = String(error); if (document.hidden) { stopped = true; break; } }
-            draw();
+    run.disabled = true; cancel.disabled = false;
+    for (const id of ['runs', 'profile']) ($ (id) as HTMLSelectElement).disabled = true;
+    samples = []; failures = []; metadata = {}; draw();
+    controller = new AbortController();
+    $('status').textContent = 'Launching controlled browser…';
+    let done = false;
+    try {
+        const runs = ($('runs') as HTMLSelectElement).value;
+        const profile = ($('profile') as HTMLSelectElement).value;
+        const response = await fetch(`./api/run?runs=${runs}&profile=${profile}`, { method: 'POST', signal: controller.signal });
+        if (!response.ok) throw new Error(await response.text());
+        if (!response.headers.get('content-type')?.includes('application/x-ndjson')) throw new Error('Start the local runner with npm start to control cache and network.');
+        const reader = response.body!.getReader();
+        const decoder = new TextDecoder();
+        let pending = '';
+        while (true) {
+            const chunk = await reader.read();
+            if (chunk.done) break;
+            pending += decoder.decode(chunk.value, { stream: true });
+            let end: number;
+            while ((end = pending.indexOf('\n')) >= 0) {
+                const event = JSON.parse(pending.slice(0, end)); pending = pending.slice(end + 1);
+                if (event.type === 'meta') { metadata = event; $('environment').textContent = `${event.browser} · headless · ${event.network.label} · gzip`; }
+                if (event.type === 'progress') $('status').textContent = `${names[event.engine]} · cold cache · round ${event.round} of ${runs}`;
+                if (event.type === 'sample') { samples.push(event); draw(); }
+                if (event.type === 'failure') failures.push(`${names[event.engine]} round ${event.round}: ${event.error}`);
+                if (event.type === 'error') throw new Error(event.error);
+                if (event.type === 'done') done = true;
+            }
         }
+        if (!done) throw new Error('Runner disconnected; partial results retained.');
+        $('status').textContent = failures.length ? `Finished with errors: ${failures.join(' ')}` : `Complete · ${runs} cold-cache samples per engine.`;
+    } catch (error) {
+        const message = controller.signal.aborted ? 'Cancelled; partial results retained.' : String(error);
+        failures.push(message); $('status').textContent = message;
+    } finally {
+        controller = undefined;
+        run.disabled = false; cancel.disabled = true;
+        for (const id of ['runs', 'profile']) ($(id) as HTMLSelectElement).disabled = false;
     }
-    $('status').textContent = Object.keys(errors).length ? Object.values(errors).join(' ') : `Complete · ${count} samples per engine. Run again to compare.`;
-    $('current').textContent = 'Measurement finished. Open a scene below to inspect it.';
-    $('stage').innerHTML = engines.map(e => `<a href="./startup/${e}/index.html" target="_blank" rel="noopener">Open ${names[e]} ↗</a>`).join('');
-    run.disabled = false; download.disabled = !engines.some(e => samples[e].length);
 };
-download.onclick = () => {
-    const blob = new Blob([JSON.stringify({ measuredAt: new Date().toISOString(), userAgent: navigator.userAgent, cache: 'browser cache enabled; mixed first visit and warm reloads', metric: 'navigation to first render submission, milliseconds', versions: __VERSIONS__, samples, errors }, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = 'startup-results.json'; a.click(); URL.revokeObjectURL(url);
-};
+cancel.onclick = () => controller?.abort();
 draw();
-run.click();
