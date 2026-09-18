@@ -5,8 +5,11 @@ export function report(engine: string) {
     // Run after the complete render stack, including Bare's final WebGL flush.
     queueMicrotask(() => {
         const submittedMs = performance.now();
-        const canvas = document.querySelector('canvas')!;
-        const gl = canvas.getContext('webgl2') || canvas.getContext('webgl');
+        const canvases = Array.from(document.querySelectorAll('canvas')).reverse();
+        const gl = canvases.reduce<WebGLRenderingContext | WebGL2RenderingContext | null>((context, canvas) =>
+            context
+            || (canvas.getContext('webgl2') as WebGL2RenderingContext | null)
+            || (canvas.getContext('webgl') as WebGLRenderingContext | null), null);
         if (!gl || gl.isContextLost()) throw new Error('No active WebGL context for first-frame measurement');
         // Deliberately synchronize once: the primary metric includes GPU completion.
         gl.finish();

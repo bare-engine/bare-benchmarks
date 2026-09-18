@@ -8,20 +8,28 @@ export const profiles = {
 
 export async function runBenchmarks({ baseURL, runs, profile, emit, signal }) {
     const channel = process.env.BENCHMARK_BROWSER || 'msedge';
-    const browser = await chromium.launch({ channel, headless: true });
-    if (signal.aborted) { await browser.close(); return; }
-    const abort = () => { void browser.close(); };
+    let browser;
+    const abort = () => { void browser?.close(); };
     signal.addEventListener('abort', abort, { once: true });
     try {
-        emit({ type: 'meta', browser: `${channel} ${browser.version()}`, profile, network: profiles[profile], runs, metric: 'navigation-to-first-gpu-completed-frame', compression: 'gzip', measuredAt: new Date().toISOString() });
-        const engines = ['bare', 'pixi', 'phaser'];
+        const engines = ['bare', 'pixi', 'phaser', 'melon', 'excalibur', 'kaplay', 'littlejs'];
         for (let round = 0; round < runs; round++) {
             for (let offset = 0; offset < engines.length; offset++) {
                 const engine = engines[(round + offset) % engines.length];
                 if (signal.aborted) return;
-                // A fresh context and cleared cache isolate every cold sample.
+                // The GPU process (and ANGLE's compiled-shader cache inside it) outlives browser contexts,
+                // so a warm sample would skip shader compilation. A fresh browser per sample keeps every
+                // sample cold; the warm-up below only spins up the GPU process itself, which a real visitor's
+                // already-running browser would have done long before navigating.
+                browser = await chromium.launch({ channel, headless: true });
+                if (signal.aborted) return;
+                if (round === 0 && offset === 0) emit({ type: 'meta', browser: `${channel} ${browser.version()}`, profile, network: profiles[profile], runs, metric: 'navigation-to-first-gpu-completed-frame', compression: 'gzip', measuredAt: new Date().toISOString() });
                 const context = await browser.newContext({ viewport: { width: 640, height: 360 }, deviceScaleFactor: 1, serviceWorkers: 'block' });
                 try {
+                    const warmup = await context.newPage();
+                    await warmup.goto('about:blank');
+                    await warmup.evaluate(() => { const gl = document.createElement('canvas').getContext('webgl2'); gl?.clear(gl.COLOR_BUFFER_BIT); gl?.finish(); });
+                    await warmup.close();
                     const page = await context.newPage();
                     const cdp = await context.newCDPSession(page);
                     await cdp.send('Network.enable');
@@ -46,12 +54,12 @@ export async function runBenchmarks({ baseURL, runs, profile, emit, signal }) {
                 } catch (error) {
                     if (signal.aborted) return;
                     emit({ type: 'failure', engine, round: round + 1, error: String(error) });
-                } finally { await context.close().catch(() => {}); }
+                } finally { await browser.close().catch(() => {}); }
             }
         }
         emit({ type: 'done' });
     } finally {
         signal.removeEventListener('abort', abort);
-        await browser.close();
+        await browser?.close().catch(() => {});
     }
 }

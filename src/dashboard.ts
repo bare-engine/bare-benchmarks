@@ -1,7 +1,7 @@
 ﻿import './dashboard.css';
 declare const __VERSIONS__: Record<string, string>;
-const engines = ['bare', 'pixi', 'phaser'];
-const names: Record<string, string> = { bare: 'Bare', pixi: 'PixiJS', phaser: 'Phaser' };
+const engines = ['bare', 'pixi', 'phaser', 'melon', 'excalibur', 'kaplay', 'littlejs'];
+const names: Record<string, string> = { bare: 'Bare', pixi: 'PixiJS', phaser: 'Phaser', melon: 'MelonJS', excalibur: 'Excalibur', kaplay: 'KAPLAY', littlejs: 'LittleJS' };
 const $ = (id: string) => document.getElementById(id)!;
 const run = $('run') as HTMLButtonElement;
 const cancel = $('cancel') as HTMLButtonElement;

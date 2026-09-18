@@ -1,6 +1,6 @@
 ﻿# Engine benchmarks
 
-Production startup benchmarks for Bare, PixiJS 8.21.0 and Phaser 4.2.1. Bare remains the existing Git dependency; package-lock.json records its revision.
+Production startup benchmarks for Bare, PixiJS 8.21.0, Phaser 4.2.1, MelonJS 20.6.0, Excalibur 0.32.0, KAPLAY 3001.0.19 and LittleJS 1.18.29. Bare remains the existing Git dependency; package-lock.json records its revision.
 
 Run `npm install`, then `npm start` and open http://127.0.0.1:4173. Requires installed Microsoft Edge. Set BENCHMARK_BROWSER=chrome to use installed Chrome instead. Select a sample count and network profile, then click Run benchmarks. Tests run in a separate local headless browser; your dashboard browser is only the controller. The results use horizontal bars for quick comparison while retaining exact median and min–max values.
 

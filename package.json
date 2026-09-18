@@ -32,6 +32,10 @@
     },
     "dependencies": {
         "bare-engine": "github:BareEngine/BareEngine",
+        "excalibur": "0.32.0",
+        "kaplay": "3001.0.19",
+        "littlejsengine": "1.18.29",
+        "melonjs": "20.6.0",
         "phaser": "4.2.1",
         "pixi.js": "8.21.0"
     },

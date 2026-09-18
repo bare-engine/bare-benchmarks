@@ -3,7 +3,7 @@ const baseURL = 'http://127.0.0.1:4287';
 test('first rendered frame, cold cache and throttled profile', async ({ page }) => {
     const errors = [];
     page.on('pageerror', error => errors.push(error.message));
-    for (const engine of ['bare', 'pixi', 'phaser']) {
+    for (const engine of ['bare', 'pixi', 'phaser', 'melon', 'excalibur', 'kaplay', 'littlejs']) {
         await page.goto(`${baseURL}/startup/${engine}/index.html`);
         await page.waitForFunction(() => window.__benchmarkResult?.ms > 0);
         const result = await page.evaluate(() => ({ ...window.__benchmarkResult, width: document.querySelector('canvas').width, height: document.querySelector('canvas').height }));
@@ -27,7 +27,7 @@ test('first rendered frame, cold cache and throttled profile', async ({ page }) 
     const raw = await page.evaluate(async () => (await fetch('/api/run?runs=3&profile=none', { method: 'POST' })).text());
     const events = raw.trim().split('\n').map(line => JSON.parse(line));
     const samples = events.filter(event => event.type === 'sample');
-    expect(samples).toHaveLength(9);
+    expect(samples).toHaveLength(21);
     for (const sample of samples) {
         const assets = sample.requests.filter(r => !r.url.includes('index.html'));
         expect(assets.length).toBeGreaterThan(0);
@@ -54,7 +54,7 @@ test('invalid configurations are rejected and cancellation releases runner', asy
         const response = await fetch('/api/run?runs=1&profile=none', { method: 'POST' });
         if (response.status === 409) return false;
         const events = (await response.text()).trim().split('\n').map(line => JSON.parse(line));
-        return events.some(event => event.type === 'done') && events.filter(event => event.type === 'sample').length === 3;
+        return events.some(event => event.type === 'done') && events.filter(event => event.type === 'sample').length === 7;
     }), { timeout: 30000 }).toBe(true);
 });
 

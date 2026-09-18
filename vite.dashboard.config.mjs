@@ -4,6 +4,6 @@ const version = (name) => JSON.parse(readFileSync(`node_modules/${name}/package.
 export default defineConfig({
   base: './',
   publicDir: false,
-  define: { __VERSIONS__: JSON.stringify({ bare: version('bare-engine'), pixi: version('pixi.js'), phaser: version('phaser') }) },
-  build: { target: 'es2020', rollupOptions: { input: ['index.html', 'startup/pixi/index.html', 'startup/phaser/index.html'] } },
+  define: { __VERSIONS__: JSON.stringify({ bare: version('bare-engine'), pixi: version('pixi.js'), phaser: version('phaser'), melon: version('melonjs'), excalibur: version('excalibur'), kaplay: version('kaplay'), littlejs: version('littlejsengine') }) },
+  build: { target: 'es2022', rollupOptions: { input: ['index.html', 'startup/pixi/index.html', 'startup/phaser/index.html', 'startup/melon/index.html', 'startup/excalibur/index.html', 'startup/kaplay/index.html', 'startup/littlejs/index.html'] } },
 });
