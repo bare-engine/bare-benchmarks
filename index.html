@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Engine benchmarks</title></head>
+<body>
+<main>
+  <header><span class="eyebrow">BARE / PIXIJS / PHASER</span><h1>Engine benchmarks<span>.</span></h1><p>Small scenes. Production builds. Measured in your browser.</p></header>
+  <nav><span class="active">01 &nbsp; Startup speed</span><span>02 &nbsp; Render time · soon</span><span>03 &nbsp; Bundle size · soon</span></nav>
+  <section class="intro"><div><h2>One image, first frame.</h2><p>Load the same gear atlas and draw a centered, rotating sprite.<br>Navigation → first submitted frame. Lower is faster.</p></div><div class="controls"><label>Runs per engine <select id="runs"><option>3</option><option selected>10</option><option>30</option></select></label><button id="run">Run benchmarks ↗</button></div></section>
+  <p id="status" role="status">Ready to measure.</p>
+  <table><thead><tr><th>Engine</th><th>Median</th><th>Min–max</th><th>Samples</th><th>Relative time</th></tr></thead><tbody id="results"></tbody></table>
+  <section class="preview"><div><h2>Live benchmark</h2><p id="current">The active scene appears here.</p><button id="download" disabled>Download results ↓</button></div><div id="stage"></div></section>
+  <details><summary>How this measurement works</summary><p>Each sample navigates a fresh 640 × 360 iframe. Only one engine runs at a time; order rotates each round. All use WebGL, antialiasing, resolution 1, the same atlas and a 60°/second rotation. Bare retains its standard production build and initial-asset preloading; PixiJS and Phaser use their native atlas loaders.</p><p>Time includes document and script loading, JavaScript evaluation, engine initialization, image loading and the first render submission. It does not measure GPU completion or physical screen presentation. Browser caching is left enabled: first visits may be cold, subsequent samples are warm. This is not a controlled cold-cache test. Keep this tab visible and avoid other heavy workloads.</p><p>Results depend on your browser, hardware and cache. Render throughput and bundle-size comparisons will be separate benchmarks.</p></details>
+  <footer>Local measurements · no scores sent anywhere</footer>
+</main><script type="module" src="/src/dashboard.ts"></script>
+</body></html>

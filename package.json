@@ -1,0 +1,41 @@
+{
+    "name": "Bare Game",
+    "version": "1.2.1",
+    "scripts": {
+        "dev": "npm run start",
+        "dev:open": "npm run build && npm run preview -- --open",
+        "build": "node scripts/build.mjs",
+        "build-zip": "npm run build && cd dist && bestzip ../dist.zip *",
+        "dev-nolog": "npm run start",
+        "build-nolog": "node scripts/build.mjs",
+        "analyze": "bare-engine-analyze",
+        "poki-upload": "poki upload",
+        "build:assets": "node node_modules/bare-engine/scripts/buildAssets.cjs",
+        "preview": "vite preview --config vite.dashboard.config.mjs --host 127.0.0.1",
+        "start": "npm run build && npm run preview",
+        "dev:bare": "vite --config vite.config.cjs --mode development",
+        "test": "playwright test",
+        "typecheck": "tsc --noEmit"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/BareEngine/Template.git"
+    },
+    "author": "Jeroen Wimmers",
+    "license": "MIT",
+    "devDependencies": {
+        "@assetpack/core": "^1.7.0",
+        "@playwright/test": "^1.63.0",
+        "bestzip": "^2.2.1",
+        "typescript": "5.9.3",
+        "vite": "^6.3.5"
+    },
+    "dependencies": {
+        "bare-engine": "github:BareEngine/BareEngine",
+        "phaser": "4.2.1",
+        "pixi.js": "8.21.0"
+    },
+    "bareEngine": {
+        "gameId": "bareTemplate"
+    }
+}
