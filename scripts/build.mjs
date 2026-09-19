@@ -1,16 +1,27 @@
 import { build } from 'vite';
 import { createRequire } from 'node:module';
 import { mkdir, copyFile, writeFile } from 'node:fs/promises';
-import { spawn } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
+import { resolve } from 'node:path';
 import { chromium } from '@playwright/test';
 const require = createRequire(import.meta.url);
-await build({ configFile: 'vite.dashboard.config.mjs' });
+const root = process.cwd();
+
+await build({ configFile: 'vite.dashboard.config.mjs' }); // empties dist/, so it goes first
+
+// Bare is a self-contained project in benchmarks/startup/bare and its Vite config keys off cwd, so build it from
+// there. Packing benchmarks/startup/bare/texturePackImages into the atlas (which every engine loads) is a separate
+// step in production; only Bare's dev server runs it automatically.
+process.chdir('benchmarks/startup/bare');
+const packed = spawnSync(process.execPath, [resolve(root, 'node_modules/bare-engine/scripts/buildAssets.cjs')], { stdio: 'inherit' });
+if (packed.status !== 0) process.exit(packed.status ?? 1);
 const bare = require('bare-engine/config/vite.config.cjs')({ mode: 'production' });
-await build({ ...bare, configFile: false, mode: 'production', build: { ...bare.build, outDir: 'dist/startup/bare' } });
+await build({ ...bare, configFile: false, mode: 'production', build: { ...bare.build, outDir: resolve(root, 'dist/benchmarks/startup/bare') } });
+process.chdir(root);
 for (const engine of ['pixi', 'phaser', 'melon', 'excalibur', 'kaplay', 'littlejs']) {
-  await mkdir(`dist/startup/${engine}/initial/generated`, { recursive: true });
+  await mkdir(`dist/benchmarks/startup/${engine}/initial/generated`, { recursive: true });
   for (const file of ['texturePackImages.json', 'texturePackImages.webp']) {
-    await copyFile(`public/initial/generated/${file}`, `dist/startup/${engine}/initial/generated/${file}`);
+    await copyFile(`benchmarks/startup/bare/public/initial/generated/${file}`, `dist/benchmarks/startup/${engine}/initial/generated/${file}`);
   }
 }
 
@@ -32,7 +43,7 @@ try {
     let bytes = 0;
     cdp.on('Network.responseReceived', ({ requestId, response }) => { if (/javascript/i.test(response.mimeType)) scripts.add(requestId); });
     cdp.on('Network.loadingFinished', ({ requestId, encodedDataLength }) => { if (scripts.has(requestId)) bytes += encodedDataLength; });
-    await page.goto(`http://127.0.0.1:${port}/startup/${engine}/index.html`, { waitUntil: 'load' });
+    await page.goto(`http://127.0.0.1:${port}/benchmarks/startup/${engine}/index.html`, { waitUntil: 'load' });
     await page.waitForFunction(() => window.__benchmarkResult, {}, { timeout: 60000 });
     sizes[engine] = bytes;
     await context.close();

@@ -1,0 +1,7 @@
+{
+    "name": "bare-startup-benchmark",
+    "private": true,
+    "bareEngine": {
+        "gameId": "bareBenchmark"
+    }
+}

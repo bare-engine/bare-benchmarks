@@ -1,5 +1,5 @@
 import { Application, Sprite, Stage, TextureAtlas, WEBGL, event, loader, state } from 'melonjs';
-import { report } from './report';
+import { report } from '../../shared/report';
 
 const app = new Application(640, 360, {
     parent: 'game',
@@ -25,11 +25,14 @@ const atlasData = {
     frames: Object.entries(packed.frames).map(([filename, frame]) => ({ filename, ...(frame as object) })),
 };
 const atlas = new TextureAtlas(atlasData, loader.getImage('gearImage')!);
-const gear = new Sprite(320, 180, { image: atlas, region: '⚙' });
-gear.update = (delta) => { gear.rotate(delta * Math.PI / 3000); return true; };
+const gear = new Sprite(188, 120, { image: atlas, region: '⚙' });
+gear.anchorPoint.set(0, 0);
+const chart = new Sprite(330, 120, { image: atlas, region: '📊' });
+chart.anchorPoint.set(0, 0);
 state.set(state.PLAY, new Stage({ onResetEvent: () => {
     app.world.backgroundColor.parseCSS('#ffffff');
     app.world.addChild(gear);
+    app.world.addChild(chart);
     event.once(event.GAME_AFTER_DRAW, () => report('melon'));
 } }));
 state.change(state.PLAY, true);

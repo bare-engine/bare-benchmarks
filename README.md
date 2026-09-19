@@ -9,7 +9,6 @@ Run `npm install`, then `npm start` and open http://127.0.0.1:4173. Requires ins
 - `npm run dev`: build and serve; rebuild after source changes.
 - `npm run dev:bare`: original Bare development server.
 - `npm run typecheck`: check application TypeScript.
-- `npm test`: browser tests including cold-cache misses, network profile, frame reporting, bars and cancellation.
 
 ## First rendered frame
 
@@ -37,11 +36,11 @@ The local Node server is required: ordinary static webpages cannot clear browser
 ## Files
 
 - index.html and src/dashboard.*: runner UI and cold-cache results.
-- src/game.ts and src/benchmarks/: engine scenes and shared first-frame reporting.
-- scripts/build.mjs: production builds and shared atlas copies.
+- benchmarks/startup/<engine>/: each engine's page and scene. benchmarks/shared/ holds first-frame reporting and the atlas JSON loader.
+- benchmarks/startup/bare/: Bare is a self-contained Bare project (own package.json, Vite config, src/game.ts and texturePackImages/), since its build is driven by the engine's Vite plugins. Its packed atlas is what every engine loads.
+- scripts/build.mjs: production builds, atlas packing and shared atlas copies.
 - scripts/serve.mjs: local static server and streaming run API.
 - scripts/runner.mjs: browser isolation, cache control and throttling.
-- tests/startup.spec.mjs: end-to-end verification; writes screenshots and JSON under test-results/.
 
 Render time and bundle size remain future benchmarks. skipLibCheck avoids upstream engine declaration conflicts while application TypeScript remains checked.
 

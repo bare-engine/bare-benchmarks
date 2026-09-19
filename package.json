@@ -1,20 +1,11 @@
 {
-    "name": "Bare Game",
+    "name": "bare-benchmarks",
     "version": "1.2.1",
     "scripts": {
-        "dev": "npm run start",
-        "dev:open": "npm start",
-        "build": "node scripts/build.mjs",
-        "build-zip": "npm run build && cd dist && bestzip ../dist.zip *",
-        "dev-nolog": "npm run start",
-        "build-nolog": "node scripts/build.mjs",
-        "analyze": "bare-engine-analyze",
-        "poki-upload": "poki upload",
-        "build:assets": "node node_modules/bare-engine/scripts/buildAssets.cjs",
-        "preview": "node scripts/serve.mjs",
         "start": "npm run build && npm run preview",
-        "dev:bare": "vite --config vite.config.cjs --mode development",
-        "test": "playwright test",
+        "build": "node scripts/build.mjs",
+        "preview": "node scripts/serve.mjs",
+        "dev:bare": "cd benchmarks/startup/bare && vite --mode development",
         "typecheck": "tsc --noEmit"
     },
     "repository": {
@@ -26,7 +17,6 @@
     "devDependencies": {
         "@assetpack/core": "^1.7.0",
         "@playwright/test": "^1.63.0",
-        "bestzip": "^2.2.1",
         "typescript": "5.9.3",
         "vite": "^6.3.5"
     },
@@ -38,8 +28,5 @@
         "melonjs": "20.6.0",
         "phaser": "4.2.1",
         "pixi.js": "8.21.0"
-    },
-    "bareEngine": {
-        "gameId": "bareTemplate"
     }
 }

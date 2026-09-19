@@ -44,7 +44,7 @@ export async function runBenchmarks({ baseURL, runs, profile, emit, signal }) {
                     page.on('pageerror', error => { pageError = error.message; });
                     const navigate = async () => {
                         requests = []; pageError = undefined;
-                        await page.goto(`${baseURL}/startup/${engine}/index.html`, { waitUntil: 'load', timeout: 60000 });
+                        await page.goto(`${baseURL}/benchmarks/startup/${engine}/index.html`, { waitUntil: 'load', timeout: 60000 });
                         await page.waitForFunction(() => window.__benchmarkResult, { }, { timeout: 60000 });
                         if (pageError) throw new Error(pageError);
                         return { ...await page.evaluate(() => window.__benchmarkResult), requests };

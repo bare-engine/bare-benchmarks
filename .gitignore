@@ -6,8 +6,8 @@
 # Node artifact files
 node_modules/
 dist/
-public/initial/generated/
-src/generated/
+benchmarks/startup/bare/public/initial/generated/
+benchmarks/startup/bare/src/generated/
 
 # Compiled Java class files
 *.class
@@ -62,6 +62,3 @@ stats.json
 dist.zip
 
 
-# Browser test artifacts
-test-results/
-playwright-report/

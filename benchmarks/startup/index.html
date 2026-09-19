@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>All engine scenes</title>
+<style>
+:root{font-family:Inter,system-ui,sans-serif;color:#e8eee9;background:#101512}*{box-sizing:border-box}body{margin:0}
+main{max-width:1120px;margin:auto;padding:48px 32px}h1{font-size:32px;letter-spacing:-.04em;margin:0 0 6px}h1 span{color:#b9ef72}
+p{color:#9eafa3;line-height:1.7;margin:0 0 32px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:28px}
+figure{margin:0}figcaption{display:flex;justify-content:space-between;font-size:14px;font-weight:600;margin-bottom:8px}
+figcaption a{color:#a3b7a6;font-weight:400;text-decoration:none}figcaption a:hover{color:#b9ef72}
+.frame{position:relative;width:100%;aspect-ratio:16/9;overflow:hidden;border:1px solid #435247;border-radius:6px;background:#fff}
+.frame iframe{position:absolute;top:0;left:0;width:640px;height:360px;border:0;transform-origin:0 0}
+</style></head>
+<body><main>
+<h1>All engine scenes<span>.</span></h1>
+<p>Every minimal example side by side. Each frame is the same page the benchmark runner loads.</p>
+<div class="grid">
+<figure><figcaption>Bare<a href="./bare/index.html" target="_blank" rel="noopener">Open ↗</a></figcaption><div class="frame"><iframe src="./bare/index.html" title="Bare startup" loading="lazy"></iframe></div></figure>
+<figure><figcaption>PixiJS<a href="./pixi/index.html" target="_blank" rel="noopener">Open ↗</a></figcaption><div class="frame"><iframe src="./pixi/index.html" title="PixiJS startup" loading="lazy"></iframe></div></figure>
+<figure><figcaption>Phaser<a href="./phaser/index.html" target="_blank" rel="noopener">Open ↗</a></figcaption><div class="frame"><iframe src="./phaser/index.html" title="Phaser startup" loading="lazy"></iframe></div></figure>
+<figure><figcaption>MelonJS<a href="./melon/index.html" target="_blank" rel="noopener">Open ↗</a></figcaption><div class="frame"><iframe src="./melon/index.html" title="MelonJS startup" loading="lazy"></iframe></div></figure>
+<figure><figcaption>Excalibur<a href="./excalibur/index.html" target="_blank" rel="noopener">Open ↗</a></figcaption><div class="frame"><iframe src="./excalibur/index.html" title="Excalibur startup" loading="lazy"></iframe></div></figure>
+<figure><figcaption>KAPLAY<a href="./kaplay/index.html" target="_blank" rel="noopener">Open ↗</a></figcaption><div class="frame"><iframe src="./kaplay/index.html" title="KAPLAY startup" loading="lazy"></iframe></div></figure>
+<figure><figcaption>LittleJS<a href="./littlejs/index.html" target="_blank" rel="noopener">Open ↗</a></figcaption><div class="frame"><iframe src="./littlejs/index.html" title="LittleJS startup" loading="lazy"></iframe></div></figure>
+</div>
+</main>
+<script>
+// Engine pages render a fixed 640×360 canvas; scale each iframe to the width of its slot.
+const observer = new ResizeObserver(entries => {
+  for (const { target, contentRect } of entries)
+    target.firstElementChild.style.transform = `scale(${contentRect.width / 640})`;
+});
+document.querySelectorAll('.frame').forEach(frame => observer.observe(frame));
+</script></body></html>

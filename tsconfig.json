@@ -1,15 +1,19 @@
 {
-    "extends": "bare-engine/config/tsconfig.base.json",
     "compilerOptions": {
-        "outDir": "./dist/",
-        "baseUrl": "./src",
-        "skipLibCheck": true
+        "target": "ES2022",
+        "module": "ESNext",
+        "moduleResolution": "bundler",
+        "resolveJsonModule": true,
+        "experimentalDecorators": true,
+        "lib": ["ES2022", "DOM"],
+        "skipLibCheck": true,
+        "noEmit": true
     },
     "include": [
-        "src"
+        "src",
+        "benchmarks"
     ],
     "exclude": [
-        "node_modules",
-        "**/*.spec.ts"
+        "node_modules"
     ]
 }
