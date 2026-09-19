@@ -1,4 +1,4 @@
-import { Actor, Color, Engine, ImageSource, Loader, Sprite, vec } from 'excalibur';
+import { Actor, Color, Engine, ImageSource, Sprite, vec } from 'excalibur';
 import { loadAtlas } from '../../shared/atlas';
 import { report } from '../../shared/report';
 
@@ -12,11 +12,11 @@ const game = new Engine({
     suppressPlayButton: true,
     suppressConsoleBootMessage: true,
 });
+// Excalibur's loaders pad startup with fixed delays (500 ms after load, plus a play-button/audio-unlock
+// wait), so load the resources directly and start without one, as its docs allow.
 const image = new ImageSource('./initial/generated/texturePackImages.webp');
-const [atlas] = await Promise.all([
-    loadAtlas('./initial/generated/texturePackImages.json'),
-    game.start(new Loader([image])),
-]);
+const [atlas] = await Promise.all([loadAtlas('./initial/generated/texturePackImages.json'), image.load()]);
+await game.start();
 function addSprite(name: string, x: number, y: number) {
     const f = atlas.frames[name].frame;
     const actor = new Actor({ pos: vec(x, y), anchor: vec(0, 0) });

@@ -8,6 +8,9 @@ const app = new Application(640, 360, {
     subPixel: true,
     scale: 1,
     backgroundColor: '#ffffff',
+    // By default preload() compiles every built-in shader program before completing, meant to hide behind
+    // the loading screen this page disables; off, only the programs the first frame uses get compiled.
+    prewarm: false,
 });
 
 await app.init();

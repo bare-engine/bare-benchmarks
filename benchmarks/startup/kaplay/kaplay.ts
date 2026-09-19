@@ -14,15 +14,17 @@ const k = kaplay({
     global: false,
 });
 
-const atlas = await loadAtlas('./initial/generated/texturePackImages.json');
-const { w: sheetW, h: sheetH } = atlas.meta.size;
-const names = ['⚙', '📊'];
-await k.loadSprite('atlas', './initial/generated/texturePackImages.webp', {
-    frames: names.map((name) => {
-        const f = atlas.frames[name].frame;
-        return k.quad(f.x / sheetW, f.y / sheetH, f.w / sheetW, f.h / sheetH);
-    }),
+// KAPLAY's loadSpriteAtlas(src, jsonUrl) fetches the JSON before starting the image, so load both
+// in parallel here and hand it the decoded image with the frame rects.
+const image = new Image();
+const imageLoaded = new Promise<HTMLImageElement>((resolve, reject) => {
+    image.onload = () => resolve(image);
+    image.onerror = () => reject(new Error('Could not load the atlas image'));
 });
-k.add([k.sprite('atlas', { frame: 0 }), k.pos(188, 120)]);
-k.add([k.sprite('atlas', { frame: 1 }), k.pos(330, 120)]);
+image.src = './initial/generated/texturePackImages.webp';
+const [atlas] = await Promise.all([loadAtlas('./initial/generated/texturePackImages.json'), imageLoaded]);
+await k.loadSpriteAtlas(image, Object.fromEntries(Object.entries(atlas.frames).map(([name, { frame: f }]) =>
+    [name, { x: f.x, y: f.y, width: f.w, height: f.h }])));
+k.add([k.sprite('⚙'), k.pos(188, 120)]);
+k.add([k.sprite('📊'), k.pos(330, 120)]);
 k.onDraw(() => report('kaplay'));
