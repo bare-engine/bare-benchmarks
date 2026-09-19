@@ -1,13 +1,12 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="en">
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Engine benchmarks</title></head>
 <body><main>
-<header><span class="eyebrow">Navigation → first GPU-completed frame</span><h1>Engine benchmarks<span>.</span></h1><p>Small scenes. Production builds. Controlled browser measurements.</p></header>
+<header><h1>Engine benchmarks</h1></header>
 <section class="intro"><div><h2>One image, first rendered frame.</h2></div></section>
 <div class="controls"><label>Runs per engine<select id="runs"><option selected>3</option><option>10</option><option>30</option></select></label><label>Network profile<select id="profile"><option value="none">Unthrottled</option><option value="fast4g">Fast 4G</option><option value="slow4g">Slow 4G</option><option value="3g">3G</option></select></label><button id="run">Run benchmarks ↗</button><button id="cancel" disabled>Cancel</button></div>
-<p id="status" role="status">Ready. Start a cold-cache benchmark.</p><p id="environment">Runs in a separate local headless Edge browser, controlled by the local server.</p>
+<div class="statusline"><p id="status" role="status">Ready. Start a cold-cache benchmark.</p><a href="./benchmarks/startup/index.html" target="_blank" rel="noopener">Open all scenes ↗</a></div><p id="environment">Runs in a separate local headless Edge browser, controlled by the local server.</p>
 <div id="results" class="results"></div>
-<div class="scene-links"><a href="./benchmarks/startup/index.html" target="_blank" rel="noopener">Open all scenes ↗</a></div>
 <details><summary>How this measurement works</summary><p>Every engine loads the same atlas and draws a rotating sprite on a 640 × 360 WebGL canvas at resolution 1 with antialiasing. Each reports from its own render loop after the first frame with the image; a shared hook then waits for the render stack to return and calls WebGL <code>finish()</code>, so GPU completion is included. Physical screen presentation is not.</p><p>Each sample runs in a fresh browser process with an empty HTTP cache and service workers blocked, so code, images and shaders load every time. A blank WebGL page runs first so GPU process start-up is excluded, as in an already-open browser. Engine order rotates each round. OS, DNS and GPU driver caches are not reset.</p><p>Network profiles apply bandwidth and latency limits through Chromium DevTools; CPU is not throttled. Responses are gzipped. Bare keeps its standard bootstrap and preloads; the others use their native atlas loaders.</p></details>
 <section class="intro"><div><h2>JavaScript downloaded.</h2><p>Gzipped JavaScript bundle size of each engine's minimal example.</p></div></section>
 <div id="sizes" class="results"></div>

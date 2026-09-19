@@ -1,7 +1,7 @@
 ﻿import './dashboard.css';
 declare const __VERSIONS__: Record<string, string>;
 const engines = ['bare', 'pixi', 'phaser', 'melon', 'excalibur', 'kaplay', 'littlejs'];
-const colors: Record<string, string> = { bare: '#b9ef72', pixi: '#e2497f', phaser: '#5fb4ff', melon: '#ffb454', excalibur: '#c792ea', kaplay: '#ff6b6b', littlejs: '#4dd0c4' };
+const colors: Record<string, string> = { bare: '#3b82f6', pixi: '#e2497f', phaser: '#5fb4ff', melon: '#ffb454', excalibur: '#c792ea', kaplay: '#ff6b6b', littlejs: '#4dd0c4' };
 const names: Record<string, string> = { bare: 'Bare', pixi: 'PixiJS', phaser: 'Phaser', melon: 'MelonJS', excalibur: 'Excalibur', kaplay: 'KAPLAY', littlejs: 'LittleJS' };
 const $ = (id: string) => document.getElementById(id)!;
 const run = $('run') as HTMLButtonElement;
