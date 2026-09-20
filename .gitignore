@@ -6,8 +6,8 @@
 # Node artifact files
 node_modules/
 dist/
-benchmarks/startup/bare/public/initial/generated/
-benchmarks/startup/bare/src/generated/
+benchmarks/startup*/bare/public/initial/generated/
+benchmarks/startup*/bare/src/generated/
 
 # Compiled Java class files
 *.class
@@ -62,4 +62,4 @@ stats.json
 dist.zip
 
 
-benchmarks/startup/bare/texturePackImages/
+benchmarks/startup*/bare/texturePackImages/

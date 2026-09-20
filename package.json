@@ -7,6 +7,7 @@
         "preview": "node scripts/serve.mjs",
         "dev": "vite --config vite.dashboard.config.mjs --open",
         "dev:bare": "cd benchmarks/startup/bare && vite --mode development",
+        "dev:bare:atlas": "cd benchmarks/startupAtlas/bare && vite --mode development",
         "typecheck": "tsc --noEmit"
     },
     "repository": {

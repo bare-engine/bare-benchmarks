@@ -1,0 +1,7 @@
+{
+    "name": "bare-startup-atlas-benchmark",
+    "private": true,
+    "bareEngine": {
+        "gameId": "bareAtlasBenchmark"
+    }
+}

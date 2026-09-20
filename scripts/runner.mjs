@@ -7,7 +7,9 @@ export const profiles = {
     '3g': { label: '3G', latency: 2000, downloadThroughput: 400e3 / 8, uploadThroughput: 400e3 / 8 },
 };
 
-export async function runBenchmarks({ baseURL, runs, profile, emit, signal }) {
+export const benches = { startup: 'Startup', startupAtlas: 'Startup + atlas' };
+
+export async function runBenchmarks({ baseURL, bench, runs, profile, emit, signal }) {
     const channel = process.env.BENCHMARK_BROWSER || 'msedge';
     let browser;
     const abort = () => { void browser?.close(); };
@@ -24,7 +26,7 @@ export async function runBenchmarks({ baseURL, runs, profile, emit, signal }) {
                 // already-running browser would have done long before navigating.
                 browser = await chromium.launch({ channel, headless: true });
                 if (signal.aborted) return;
-                if (round === 0 && offset === 0) emit({ type: 'meta', browser: `${channel} ${browser.version()}`, profile, network: profiles[profile], runs, metric: 'navigation-to-first-gpu-completed-frame', compression: 'gzip', measuredAt: new Date().toISOString() });
+                if (round === 0 && offset === 0) emit({ type: 'meta', bench, browser: `${channel} ${browser.version()}`, profile, network: profiles[profile], runs, metric: 'navigation-to-first-gpu-completed-frame', compression: 'gzip', measuredAt: new Date().toISOString() });
                 const context = await browser.newContext({ viewport: { width: 640, height: 360 }, deviceScaleFactor: 1, serviceWorkers: 'block' });
                 try {
                     const warmup = await context.newPage();
@@ -44,7 +46,7 @@ export async function runBenchmarks({ baseURL, runs, profile, emit, signal }) {
                     page.on('pageerror', error => { pageError = error.message; });
                     const navigate = async () => {
                         requests = []; pageError = undefined;
-                        await page.goto(`${baseURL}/benchmarks/startup/${engine}/index.html`, { waitUntil: 'load', timeout: 60000 });
+                        await page.goto(`${baseURL}/benchmarks/${bench}/${engine}/index.html`, { waitUntil: 'load', timeout: 60000 });
                         await page.waitForFunction(() => window.__benchmarkResult, { }, { timeout: 60000 });
                         if (pageError) throw new Error(pageError);
                         return { ...await page.evaluate(() => window.__benchmarkResult), requests };
