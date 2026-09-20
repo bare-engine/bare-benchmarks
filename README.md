@@ -12,13 +12,13 @@ Run `npm install`, then `npm start` and open http://127.0.0.1:4173. Requires ins
 
 ## First rendered frame
 
-All three engines load the same gear atlas, draw a centered 122 × 122 sprite on a 640 × 360 WebGL canvas at resolution 1 with antialiasing, and rotate it at 60 degrees/second. Bare retains its standard production bootstrap and parallel initial-asset loading; peers use native atlas loaders.
+Every engine draws the same centered 122 × 122 gear on a 640 × 360 WebGL canvas at resolution 1 with antialiasing. The gear is one webp embedded in each bundle as a data URL (benchmarks/shared/gear.webp via Vite `?inline`), so no page makes an asset request: the metric is engine boot to first rendered frame, with the identical decode and texture upload in every engine. Each engine loads the data URL through its own native image loader; Bare's project has no packed atlas, so its bootstrap preloads nothing.
 
 All report from their normal render loops after drawing the image. A shared microtask waits until the full render stack has returned (including Bare's flush), then calls WebGL finish() once to wait for GPU completion. The primary metric is navigation to the first GPU-completed frame, including that synchronization overhead. Exported samples also contain submittedMs, measured before finish(). Neither timestamp indicates physical monitor presentation. These numbers are not directly comparable to the previous submission-only benchmark.
 
 ## Cold cache
 
-Every sample uses a fresh browser context. HTTP cache is explicitly cleared and service workers are blocked before the measured navigation, so code, images and other resources must load on every run. Each context is disposed after its sample. Engine order rotates each round.
+Every sample uses a fresh browser context. HTTP cache is explicitly cleared and service workers are blocked before the measured navigation, so the HTML and code must load on every run. Each context is disposed after its sample. Engine order rotates each round.
 
 Cold means empty HTTP cache, not a new browser process, OS, DNS cache or GPU driver. Browser/JIT/driver reuse can still affect measurements. Context isolation prevents another engine's shared assets from warming a sample.
 
@@ -29,16 +29,16 @@ Cold means empty HTTP cache, not a new browser process, OS, DNS cache or GPU dri
 - Slow 4G: 1.4 Mbit/s download, 675 kbit/s upload, 562.5 ms request latency.
 - 3G: 400 kbit/s download, 400 kbit/s upload, 2000 ms request latency.
 
-Profiles use Chromium DevTools network emulation, not simulated UI delays. No CPU throttling. The server gzips HTML, JS, CSS and JSON. These profiles are explicit laboratory settings, matching Chrome DevTools' built-in presets, not claims about every real connection.
+Profiles use Chromium DevTools network emulation, not simulated UI delays. No CPU throttling. The server gzips HTML, JS, CSS and JSON. With no asset requests, throttled profiles mostly measure bundle download size. These profiles are explicit laboratory settings, matching Chrome DevTools' built-in presets, not claims about every real connection.
 
 The local Node server is required: ordinary static webpages cannot clear browser HTTP cache or apply network throttling. It listens on loopback and permits only same-origin run requests with fixed settings and local benchmark destinations. Cancel closes the controlled browser and preserves partial results. Missing browsers and engine failures are shown as errors, not zero scores.
 
 ## Files
 
 - index.html and src/dashboard.*: runner UI and cold-cache results.
-- benchmarks/startup/<engine>/: each engine's page and scene. benchmarks/shared/ holds first-frame reporting and the atlas JSON loader.
-- benchmarks/startup/bare/: Bare is a self-contained Bare project (own package.json, Vite config, src/game.ts and texturePackImages/), since its build is driven by the engine's Vite plugins. Its packed atlas is what every engine loads.
-- scripts/build.mjs: production builds, atlas packing and shared atlas copies.
+- benchmarks/startup/<engine>/: each engine's page and scene. benchmarks/shared/ holds first-frame reporting and the inlined gear image.
+- benchmarks/startup/bare/: Bare is a self-contained Bare project (own package.json, Vite config and src/game.ts), since its build is driven by the engine's Vite plugins. It has no texturePackImages, so nothing is packed or preloaded.
+- scripts/build.mjs: production builds and bundle-size measurement.
 - scripts/serve.mjs: local static server and streaming run API.
 - scripts/runner.mjs: browser isolation, cache control and throttling.
 

@@ -1,5 +1,5 @@
 import kaplay from 'kaplay';
-import { loadAtlas } from '../../shared/atlas';
+import { GEAR } from '../../shared/image';
 import { report } from '../../shared/report';
 
 const k = kaplay({
@@ -14,17 +14,6 @@ const k = kaplay({
     global: false,
 });
 
-// KAPLAY's loadSpriteAtlas(src, jsonUrl) fetches the JSON before starting the image, so load both
-// in parallel here and hand it the decoded image with the frame rects.
-const image = new Image();
-const imageLoaded = new Promise<HTMLImageElement>((resolve, reject) => {
-    image.onload = () => resolve(image);
-    image.onerror = () => reject(new Error('Could not load the atlas image'));
-});
-image.src = './initial/generated/texturePackImages.webp';
-const [atlas] = await Promise.all([loadAtlas('./initial/generated/texturePackImages.json'), imageLoaded]);
-await k.loadSpriteAtlas(image, Object.fromEntries(Object.entries(atlas.frames).map(([name, { frame: f }]) =>
-    [name, { x: f.x, y: f.y, width: f.w, height: f.h }])));
-k.add([k.sprite('⚙'), k.pos(188, 120)]);
-k.add([k.sprite('📊'), k.pos(330, 120)]);
+await k.loadSprite('gear', GEAR);
+k.add([k.sprite('gear'), k.pos(259, 119)]);
 k.onDraw(() => report('kaplay'));

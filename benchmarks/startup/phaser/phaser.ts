@@ -1,13 +1,13 @@
 import Phaser from 'phaser';
+import { GEAR } from '../../shared/image';
 import { report } from '../../shared/report';
 class Startup extends Phaser.Scene {
     preload() {
-        this.load.atlas('gear', './initial/generated/texturePackImages.webp', './initial/generated/texturePackImages.json');
-        this.load.on('loaderror', () => { throw new Error('Could not load the gear atlas'); });
+        this.load.image('gear', GEAR);
+        this.load.on('loaderror', () => { throw new Error('Could not load the gear image'); });
     }
     create() {
-        this.add.image(188, 120, 'gear', '⚙').setOrigin(0);
-        this.add.image(330, 120, 'gear', '📊').setOrigin(0);
+        this.add.image(259, 119, 'gear').setOrigin(0);
         this.game.events.once(Phaser.Core.Events.POST_RENDER, () => report('phaser'));
     }
 }

@@ -1,6 +1,6 @@
 import { build } from 'vite';
 import { createRequire } from 'node:module';
-import { mkdir, copyFile, writeFile } from 'node:fs/promises';
+import { mkdir, writeFile } from 'node:fs/promises';
 import { spawn, spawnSync } from 'node:child_process';
 import { resolve } from 'node:path';
 import { chromium } from '@playwright/test';
@@ -10,20 +10,16 @@ const root = process.cwd();
 await build({ configFile: 'vite.dashboard.config.mjs' }); // empties dist/, so it goes first
 
 // Bare is a self-contained project in benchmarks/startup/bare and its Vite config keys off cwd, so build it from
-// there. Packing benchmarks/startup/bare/texturePackImages into the atlas (which every engine loads) is a separate
-// step in production; only Bare's dev server runs it automatically.
+// there. Its asset step (buildAssets.cjs) still runs so src/generated/assets.ts exists, but the project has no
+// texturePackImages (the packer needs the folder to exist, so make an empty one): nothing is packed and
+// index.html gets no <link rel=preload> for an atlas. The gear is inlined like in every other engine.
 process.chdir('benchmarks/startup/bare');
+await mkdir('texturePackImages', { recursive: true });
 const packed = spawnSync(process.execPath, [resolve(root, 'node_modules/bare-engine/scripts/buildAssets.cjs')], { stdio: 'inherit' });
 if (packed.status !== 0) process.exit(packed.status ?? 1);
 const bare = require('bare-engine/config/vite.config.cjs')({ mode: 'production' });
 await build({ ...bare, configFile: false, mode: 'production', build: { ...bare.build, outDir: resolve(root, 'dist/benchmarks/startup/bare') } });
 process.chdir(root);
-for (const engine of ['pixi', 'phaser', 'melon', 'excalibur', 'kaplay', 'littlejs']) {
-  await mkdir(`dist/benchmarks/startup/${engine}/initial/generated`, { recursive: true });
-  for (const file of ['texturePackImages.json', 'texturePackImages.webp']) {
-    await copyFile(`benchmarks/startup/bare/public/initial/generated/${file}`, `dist/benchmarks/startup/${engine}/initial/generated/${file}`);
-  }
-}
 
 // Bundle sizes are a property of the build, so measure them once here: load each page in a headless
 // browser and sum the compressed bytes of every script it actually fetches before the first frame.
@@ -43,6 +39,7 @@ try {
     let bytes = 0;
     cdp.on('Network.responseReceived', ({ requestId, response }) => { if (/javascript/i.test(response.mimeType)) scripts.add(requestId); });
     cdp.on('Network.loadingFinished', ({ requestId, encodedDataLength }) => { if (scripts.has(requestId)) bytes += encodedDataLength; });
+    page.on('pageerror', error => console.error(`${engine}: ${error.message}`));
     await page.goto(`http://127.0.0.1:${port}/benchmarks/startup/${engine}/index.html`, { waitUntil: 'load' });
     await page.waitForFunction(() => window.__benchmarkResult, {}, { timeout: 60000 });
     sizes[engine] = bytes;
