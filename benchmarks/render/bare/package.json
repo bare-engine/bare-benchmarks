@@ -1,0 +1,7 @@
+{
+    "name": "bare-render-benchmark",
+    "private": true,
+    "bareEngine": {
+        "gameId": "bareRenderBenchmark"
+    }
+}

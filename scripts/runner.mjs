@@ -7,7 +7,12 @@ export const profiles = {
     '3g': { label: '3G', latency: 2000, downloadThroughput: 400e3 / 8, uploadThroughput: 400e3 / 8 },
 };
 
-export const benches = { startup: 'Startup', startupAtlas: 'Startup + atlas' };
+// Per benchmark: what the page reports and how long a sample may take. The render page ramps its sprite
+// count over many one-second windows, so it needs far longer than a startup page.
+export const benches = {
+    startup: { metric: 'navigation-to-first-gpu-completed-frame', timeout: 60000 },
+    render: { metric: 'sprites-at-full-frame-rate', timeout: 600000 },
+};
 
 export async function runBenchmarks({ baseURL, bench, runs, profile, emit, signal }) {
     const channel = process.env.BENCHMARK_BROWSER || 'msedge';
@@ -26,7 +31,7 @@ export async function runBenchmarks({ baseURL, bench, runs, profile, emit, signa
                 // already-running browser would have done long before navigating.
                 browser = await chromium.launch({ channel, headless: true });
                 if (signal.aborted) return;
-                if (round === 0 && offset === 0) emit({ type: 'meta', bench, browser: `${channel} ${browser.version()}`, profile, network: profiles[profile], runs, metric: 'navigation-to-first-gpu-completed-frame', compression: 'gzip', measuredAt: new Date().toISOString() });
+                if (round === 0 && offset === 0) emit({ type: 'meta', bench, browser: `${channel} ${browser.version()}`, profile, network: profiles[profile], runs, metric: benches[bench].metric, compression: 'gzip', measuredAt: new Date().toISOString() });
                 const context = await browser.newContext({ viewport: { width: 640, height: 360 }, deviceScaleFactor: 1, serviceWorkers: 'block' });
                 try {
                     const warmup = await context.newPage();
@@ -47,7 +52,7 @@ export async function runBenchmarks({ baseURL, bench, runs, profile, emit, signa
                     const navigate = async () => {
                         requests = []; pageError = undefined;
                         await page.goto(`${baseURL}/benchmarks/${bench}/${engine}/index.html`, { waitUntil: 'load', timeout: 60000 });
-                        await page.waitForFunction(() => window.__benchmarkResult, { }, { timeout: 60000 });
+                        await page.waitForFunction(() => window.__benchmarkResult, { }, { timeout: benches[bench].timeout });
                         if (pageError) throw new Error(pageError);
                         return { ...await page.evaluate(() => window.__benchmarkResult), requests };
                     };

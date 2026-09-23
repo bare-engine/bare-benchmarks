@@ -4,14 +4,14 @@ const engines = ['bare', 'pixi', 'phaser', 'melon', 'excalibur', 'kaplay', 'litt
 const colors: Record<string, string> = { bare: '#3b82f6', pixi: '#e2497f', phaser: '#5fb4ff', melon: '#ffb454', excalibur: '#c792ea', kaplay: '#ff6b6b', littlejs: '#4dd0c4' };
 const names: Record<string, string> = { bare: 'Bare', pixi: 'PixiJS', phaser: 'Phaser', melon: 'MelonJS', excalibur: 'Excalibur', kaplay: 'KAPLAY', littlejs: 'LittleJS' };
 const $ = (id: string) => document.getElementById(id)!;
-type Sample = { engine: string; ms: number; submittedMs: number; round: number };
+type Sample = { engine: string; value: number; round: number; fps?: number; baselineFps?: number };
 let sizes: Record<string, number> = {};
 const median = (values: number[]) => { const s = [...values].sort((a,b) => a-b); return (s[Math.floor(s.length/2)] + s[Math.floor((s.length-1)/2)]) / 2; };
 type Row = { engine: string; value: number; label: string; tip: string };
 const version = (engine: string) => `<span>Version</span><span>${__VERSIONS__[engine]}</span>`;
-// Rows with data first, fastest/smallest to slowest/largest; bars are relative to the largest value.
-function rows(target: string, list: Row[]) {
-    const sorted = [...list].sort((a, b) => (a.value || Infinity) - (b.value || Infinity));
+// Rows with data first, best to worst; bars are relative to the largest value.
+function rows(target: string, list: Row[], higherIsBetter = false) {
+    const sorted = [...list].sort((a, b) => higherIsBetter ? (b.value || 0) - (a.value || 0) : (a.value || Infinity) - (b.value || Infinity));
     const longest = Math.max(...list.map(r => r.value), 1);
     $(target).innerHTML = sorted.map(({ engine, value, label, tip }) => {
         const width = value ? Math.max(value / longest * 100, 1) : 0;
@@ -31,10 +31,12 @@ class Bench {
     samples: Sample[] = [];
     failures: string[] = [];
     controller: AbortController | undefined;
-    bench: string;
+    bench: string; unit: string; higherIsBetter: boolean;
     run: HTMLButtonElement; cancel: HTMLButtonElement; runs: HTMLSelectElement; profile: HTMLSelectElement; status: HTMLElement;
     constructor(controls: HTMLElement) {
         this.bench = controls.dataset.bench!;
+        this.unit = controls.dataset.unit ?? 'ms';
+        this.higherIsBetter = 'higherIsBetter' in controls.dataset;
         this.run = controls.querySelector('.run')!;
         this.cancel = controls.querySelector('.cancel')!;
         this.runs = controls.querySelector('.runs')!;
@@ -45,12 +47,16 @@ class Bench {
         this.draw();
     }
     draw() {
+        const format = (v: number) => this.unit === 'ms' ? v.toFixed(1) : Math.round(v).toLocaleString();
         rows(`results-${this.bench}`, engines.map(engine => {
-            const values = this.samples.filter(s => s.engine === engine).map(s => s.ms);
+            const mine = this.samples.filter(s => s.engine === engine);
+            const values = mine.map(s => s.value);
             const value = values.length ? median(values) : 0;
-            return { engine, value, label: `${value.toFixed(1)} <small>ms</small>`, tip: version(engine)
-                + `<span>Range</span><span>${values.length ? `${Math.min(...values).toFixed(1)}–${Math.max(...values).toFixed(1)} ms` : '—'}</span><span>Samples</span><span>${values.length}</span>` };
-        }));
+            const last = mine[mine.length - 1];
+            const fps = last?.fps !== undefined ? `<span>Frame rate</span><span>${last.fps.toFixed(1)} of ${last.baselineFps!.toFixed(1)} fps</span>` : '';
+            return { engine, value, label: `${format(value)} <small>${this.unit}</small>`, tip: version(engine)
+                + `<span>Range</span><span>${values.length ? `${format(Math.min(...values))}–${format(Math.max(...values))} ${this.unit}` : '—'}</span>${fps}<span>Samples</span><span>${values.length}</span>` };
+        }), this.higherIsBetter);
     }
     async start() {
         this.run.disabled = true; this.cancel.disabled = false; this.runs.disabled = true; this.profile.disabled = true;
@@ -74,7 +80,7 @@ class Bench {
                 while ((end = pending.indexOf('\n')) >= 0) {
                     const event = JSON.parse(pending.slice(0, end)); pending = pending.slice(end + 1);
                     if (event.type === 'meta') $('environment').textContent = `${event.browser} · headless · ${event.network.label} · gzip`;
-                    if (event.type === 'progress') this.status.textContent = `${names[event.engine]} · cold cache · round ${event.round} of ${runs}`;
+                    if (event.type === 'progress') this.status.textContent = `${names[event.engine]} · round ${event.round} of ${runs}`;
                     if (event.type === 'sample') { this.samples.push(event); this.draw(); }
                     if (event.type === 'failure') this.failures.push(`${names[event.engine]} round ${event.round}: ${event.error}`);
                     if (event.type === 'error') throw new Error(event.error);
@@ -82,7 +88,7 @@ class Bench {
                 }
             }
             if (!done) throw new Error('Runner disconnected; partial results retained.');
-            this.status.textContent = this.failures.length ? `Finished with errors: ${this.failures.join(' ')}` : `Complete · ${runs} cold-cache samples per engine.`;
+            this.status.textContent = this.failures.length ? `Finished with errors: ${this.failures.join(' ')}` : `Complete · ${runs} sample${runs === '1' ? '' : 's'} per engine.`;
         } catch (error) {
             this.status.textContent = this.controller.signal.aborted ? 'Cancelled; partial results retained.' : String(error);
         } finally {

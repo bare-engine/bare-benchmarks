@@ -14,7 +14,7 @@ export function report(engine: string) {
         // Deliberately synchronize once: the primary metric includes GPU completion.
         gl.finish();
         const ms = performance.now();
-        const result = { type: 'startup-result', engine, ms, submittedMs, metric: 'navigation-to-first-gpu-completed-frame' };
+        const result = { type: 'startup-result', engine, value: ms, ms, submittedMs, metric: 'navigation-to-first-gpu-completed-frame' };
         (window as any).__benchmarkResult = result;
         parent.postMessage(result, location.origin);
     });
