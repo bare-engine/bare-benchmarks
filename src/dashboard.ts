@@ -79,7 +79,6 @@ class Bench {
                 let end: number;
                 while ((end = pending.indexOf('\n')) >= 0) {
                     const event = JSON.parse(pending.slice(0, end)); pending = pending.slice(end + 1);
-                    if (event.type === 'meta') $('environment').textContent = `${event.browser} · headless · ${event.network.label} · gzip`;
                     if (event.type === 'progress') this.status.textContent = `${names[event.engine]} · round ${event.round} of ${runs}`;
                     if (event.type === 'sample') { this.samples.push(event); this.draw(); }
                     if (event.type === 'failure') this.failures.push(`${names[event.engine]} round ${event.round}: ${event.error}`);
