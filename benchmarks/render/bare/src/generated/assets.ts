@@ -2,7 +2,7 @@
 
 // IMPORTANT, THESE FIELDS GET CLEARED FOR PRODUCTION:
 // Asset.Images, Asset.Sounds, Asset.Fonts, Asset.Levels
-// Data.Entities, Data.BaseEntities, Data.Animations, Data.Layers
+// Data.Prefabs, Data.BasePrefabs, Data.Animations, Data.Layers
 // IF YOU WANT TO KEEP THEM, ADD THIS IN package.json:
 //  "bareEngine": {
 //      "stripGeneratedAssets": false
@@ -22,10 +22,10 @@ export const Asset = {
 } as const;
 
 export const Data = {
-    Entity: {},
-    Entities: [],
-    BaseEntity: {},
-    BaseEntities: [],
+    Prefab: {},
+    Prefabs: [],
+    BasePrefab: {},
+    BasePrefabs: [],
     Animation: {},
     Animations: [],
     Layer: {
@@ -41,7 +41,7 @@ Bare.assets.images = Object.values(Asset.Image);
 Bare.assets.sounds = Object.values(Asset.Sound);
 Bare.assets.fonts = Object.values(Asset.Font);
 Bare.assets.levels = Object.values(Asset.Level);
-Bare.data.entities = Object.values(Data.Entity);
-Bare.data.baseEntities = Object.values(Data.BaseEntity);
+Bare.data.prefabs = Object.values(Data.Prefab);
+Bare.data.basePrefabs = Object.values(Data.BasePrefab);
 Bare.data.animations = Object.values(Data.Animation);
 Bare.data.layers = Object.values(Data.Layer);
