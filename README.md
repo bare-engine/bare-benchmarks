@@ -1,4 +1,4 @@
-﻿# Engine benchmarks
+﻿# Web game engine benchmarks
 
 Production startup benchmarks for Bare, PixiJS 8.21.0, Phaser 4.2.1, MelonJS 20.6.0, Excalibur 0.32.0, KAPLAY 3001.0.19 and LittleJS 1.18.29. Bare remains the existing Git dependency; package-lock.json records its revision.
 
@@ -12,21 +12,21 @@ Run `npm install`, then `npm start` and open http://127.0.0.1:4173. Requires ins
 
 ## First rendered frame
 
-Every engine draws the same centered 122 × 122 gear on a 640 × 360 WebGL canvas at resolution 1 with antialiasing. The gear is one webp embedded in each bundle as a data URL (benchmarks/shared/gear.webp via Vite `?inline`), so no page makes an asset request: the metric is engine boot to first rendered frame, with the identical decode and texture upload in every engine. Each engine loads the data URL through its own native image loader; Bare's project has no packed atlas, so its bootstrap preloads nothing.
+Every engine draws the same gear, inlined into its JavaScript bundle as a data URL (benchmarks/shared/gear.webp via Vite `?inline`). Each engine passes that data URL to its own image loader, so every page decodes and uploads the identical image, and the only requests are the HTML and the bundle. Bare's project has no packed atlas, so its bootstrap preloads nothing.
 
-All report from their normal render loops after drawing the image. A shared microtask waits until the full render stack has returned (including Bare's flush), then calls WebGL finish() once to wait for GPU completion. The primary metric is navigation to the first GPU-completed frame, including that synchronization overhead. Exported samples also contain submittedMs, measured before finish(). Neither timestamp indicates physical monitor presentation.
+The clock starts at navigation and stops once the first frame showing the gear has finished on the GPU. Each engine reports from its normal render loop after drawing that frame; a shared microtask waits for the full render stack to return (including Bare's flush), then calls WebGL finish() once. The time therefore covers HTML and script download and parse, engine boot, image decode and texture upload, shader compilation, drawing, and GPU completion, including that synchronization overhead. Exported samples also contain submittedMs, measured before finish().
 
 ## Sprites at full frame rate
 
-A bunnymark (benchmarks/render/, simulation and ramp in benchmarks/shared/bunnies.ts), after the Rapid.js benchmark. 32 px gears with random velocity and spin bounce off the edges of a 640 × 360 WebGL canvas. The simulation is shared typed-array code; each engine creates its ordinary sprite objects (PixiJS Sprite, Phaser Image, melonJS Sprite, Excalibur Actor with collision disabled, KAPLAY sprite object, LittleJS EngineObject, Bare GameObject) and copies x, y and rotation into them once per frame. Special batching objects such as PixiJS ParticleContainer or Phaser SpriteGPULayer are deliberately not used.
+A bunnymark (benchmarks/render/, simulation and ramp in benchmarks/shared/bunnies.ts), after the Rapid.js benchmark. 32 px gears with random velocity and spin bounce off the edges of a 640 × 360 WebGL canvas. The simulation is shared typed-array code; each engine creates its ordinary sprite objects and copies x, y and rotation into them once per frame. Special batching objects such as PixiJS ParticleContainer or Phaser SpriteGPULayer are deliberately not used.
 
 Headless Chromium caps requestAnimationFrame at the display rate, so ms per frame would saturate at one vsync. The page measures the empty-scene frame rate, then holds 1,000, 2,000, 4,000 … sprites for a 0.5 s warm-up plus a 1 s sample each until the rate falls under 90 % of the empty-scene rate, and bisects three times. The value is the largest passing count; each sample also records the frame rate at that count and the ramp steps. Each engine still gets a fresh browser per sample; the network profile only affects page load.
 
 ## Cold cache
 
-Every sample uses a fresh browser context. HTTP cache is explicitly cleared and service workers are blocked before the measured navigation, so the HTML and code must load on every run. Each context is disposed after its sample. Engine order rotates each round.
+Every sample launches a fresh browser. The GPU process, and the compiled-shader cache inside it, would otherwise outlive a browser context and let a later sample skip shader compilation. HTTP cache is explicitly cleared and service workers are blocked before the measured navigation, so the HTML, code and shaders load cold on every run. A blank WebGL page runs first so GPU process start-up is excluded, as in an already-open browser. The browser is closed after its sample. Engine order rotates each round.
 
-Cold means empty HTTP cache, not a new browser process, OS, DNS cache or GPU driver. Browser/JIT/driver reuse can still affect measurements. Context isolation prevents another engine's shared assets from warming a sample.
+Cold means a new browser with an empty HTTP cache, not a reset OS, DNS cache or GPU driver. OS and driver caches can still affect measurements.
 
 ## Network profiles
 
