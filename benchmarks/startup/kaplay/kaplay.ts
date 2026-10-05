@@ -1,5 +1,5 @@
 import kaplay from 'kaplay';
-import { GEAR } from '../../shared/image';
+import { BUNNY } from '../../shared/image';
 import { report } from '../../shared/report';
 
 const k = kaplay({
@@ -14,6 +14,6 @@ const k = kaplay({
     global: false,
 });
 
-await k.loadSprite('gear', GEAR);
-k.add([k.sprite('gear'), k.pos(259, 119)]);
+await k.loadSprite('bunny', BUNNY);
+k.add([k.sprite('bunny'), k.pos(307, 161)]);
 k.onDraw(() => report('kaplay'));

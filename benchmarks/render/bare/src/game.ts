@@ -1,6 +1,6 @@
 import { GameObject, Scene, StartBare } from 'bare-engine';
-import { runRenderBenchmark, SPRITE_SCALE, WIDTH, HEIGHT } from '../../../shared/bunnies';
-import { GEAR } from '../../../shared/image';
+import { runRenderBenchmark, WIDTH, HEIGHT } from '../../../shared/bunnies';
+import { BUNNY } from '../../../shared/image';
 
 const DEG = 180 / Math.PI;
 
@@ -17,13 +17,13 @@ export class Game extends Scene
 
     async OnStart()
     {
-        const texture = await rapid.texture.load(GEAR);
+        const texture = await rapid.texture.load(BUNNY);
         void runRenderBenchmark('bare', {
             setCount: sim =>
             {
                 while (this.objects.length > sim.count) this.RemoveGameObject(this.objects.pop()!);
                 while (this.objects.length < sim.count)
-                    this.objects.push(this.AddGameObject({ name: 'gear', texture: 'NONE', baseClass: 'GameObject' }).SetTexture(texture).CenterPivot().SetScale(SPRITE_SCALE));
+                    this.objects.push(this.AddGameObject({ name: 'bunny', texture: 'NONE', baseClass: 'GameObject' }).SetTexture(texture).CenterPivot());
             },
             apply: sim =>
             {

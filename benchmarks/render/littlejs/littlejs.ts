@@ -12,12 +12,12 @@ import {
     TileInfo,
     vec2,
 } from 'littlejsengine';
-import { runRenderBenchmark, SPRITE_SIZE, WIDTH, HEIGHT } from '../../shared/bunnies';
-import { GEAR, GEAR_SIZE } from '../../shared/image';
+import { runRenderBenchmark, WIDTH, HEIGHT } from '../../shared/bunnies';
+import { BUNNY, BUNNY_WIDTH, BUNNY_HEIGHT } from '../../shared/image';
 
-class Gear extends EngineObject {
+class Bunny extends EngineObject {
     constructor() {
-        super(vec2(0, 0), vec2(SPRITE_SIZE, SPRITE_SIZE), new TileInfo(vec2(0, 0), vec2(GEAR_SIZE, GEAR_SIZE), textureInfos[0], 0));
+        super(vec2(0, 0), vec2(BUNNY_WIDTH, BUNNY_HEIGHT), new TileInfo(vec2(0, 0), vec2(BUNNY_WIDTH, BUNNY_HEIGHT), textureInfos[0], 0));
         this.mass = 0; // static: skip the physics/gravity step
     }
 }
@@ -29,7 +29,7 @@ setShowSplashScreen(false);
 glSetAntialias(false);
 
 const root = document.body.appendChild(document.createElement('div'));
-const gears: Gear[] = [];
+const bunnies: Bunny[] = [];
 let frameUpdate = () => {};
 let frameRendered = () => {};
 
@@ -39,15 +39,15 @@ await engineInit(
     () => {
         void runRenderBenchmark('littlejs', {
             setCount(sim) {
-                while (gears.length > sim.count) gears.pop()!.destroy();
-                while (gears.length < sim.count) gears.push(new Gear());
+                while (bunnies.length > sim.count) bunnies.pop()!.destroy();
+                while (bunnies.length < sim.count) bunnies.push(new Bunny());
             },
             apply(sim) {
                 for (let i = 0; i < sim.count; i++) {
-                    const gear = gears[i];
-                    gear.pos.x = sim.x[i] - WIDTH / 2;
-                    gear.pos.y = HEIGHT / 2 - sim.y[i];
-                    gear.angle = sim.rotation[i];
+                    const bunny = bunnies[i];
+                    bunny.pos.x = sim.x[i] - WIDTH / 2;
+                    bunny.pos.y = HEIGHT / 2 - sim.y[i];
+                    bunny.angle = sim.rotation[i];
                 }
             },
             onFrame(update, rendered) { frameUpdate = update; frameRendered = rendered; },
@@ -57,7 +57,7 @@ await engineInit(
     () => {},
     () => frameUpdate(),
     () => frameRendered(),
-    [GEAR],
+    [BUNNY],
     root,
 );
 root.style.cssText = `position:relative;width:${WIDTH}px;height:${HEIGHT}px;overflow:hidden;background:#fff`;

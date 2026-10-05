@@ -8,12 +8,10 @@
 // Headless Chromium caps requestAnimationFrame at the display rate, so frame time cannot go below one vsync
 // and "ms per frame" would saturate. The metric is instead the classic bunnymark one: the largest sprite
 // count an engine holds at full frame rate. Counts double from START until frames drop, then bisect.
-import { GEAR_SIZE } from './image';
+import { BUNNY_WIDTH as SPRITE_WIDTH, BUNNY_HEIGHT as SPRITE_HEIGHT } from './image';
 
 export const WIDTH = 640;
 export const HEIGHT = 360;
-export const SPRITE_SIZE = 32;
-export const SPRITE_SCALE = SPRITE_SIZE / GEAR_SIZE;
 
 const START = 1000;
 const MAX = 1_000_000;
@@ -46,11 +44,10 @@ function createRandom(seed: number) {
 
 export function createSim(count: number): Sim {
     const random = createRandom(0x2f6e2b1 + count);
-    const half = SPRITE_SIZE / 2;
     const sim: Sim = { count, x: new Float32Array(count), y: new Float32Array(count), vx: new Float32Array(count), vy: new Float32Array(count), rotation: new Float32Array(count), spin: new Float32Array(count) };
     for (let i = 0; i < count; i++) {
-        sim.x[i] = half + random() * (WIDTH - SPRITE_SIZE);
-        sim.y[i] = half + random() * (HEIGHT - SPRITE_SIZE);
+        sim.x[i] = SPRITE_WIDTH / 2 + random() * (WIDTH - SPRITE_WIDTH);
+        sim.y[i] = SPRITE_HEIGHT / 2 + random() * (HEIGHT - SPRITE_HEIGHT);
         const angle = random() * Math.PI * 2;
         const speed = 55 + random() * 115;
         sim.vx[i] = Math.cos(angle) * speed;
@@ -62,7 +59,7 @@ export function createSim(count: number): Sim {
 }
 
 export function updateSim(sim: Sim, delta: number) {
-    const minX = SPRITE_SIZE / 2, minY = SPRITE_SIZE / 2, maxX = WIDTH - minX, maxY = HEIGHT - minY;
+    const minX = SPRITE_WIDTH / 2, minY = SPRITE_HEIGHT / 2, maxX = WIDTH - minX, maxY = HEIGHT - minY;
     for (let i = 0; i < sim.count; i++) {
         let x = sim.x[i] + sim.vx[i] * delta;
         let y = sim.y[i] + sim.vy[i] * delta;

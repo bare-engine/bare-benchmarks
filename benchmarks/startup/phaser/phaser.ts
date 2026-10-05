@@ -1,13 +1,13 @@
 import Phaser from 'phaser';
-import { GEAR } from '../../shared/image';
+import { BUNNY } from '../../shared/image';
 import { report } from '../../shared/report';
 class Startup extends Phaser.Scene {
     preload() {
-        this.load.image('gear', GEAR);
-        this.load.on('loaderror', () => { throw new Error('Could not load the gear image'); });
+        this.load.image('bunny', BUNNY);
+        this.load.on('loaderror', () => { throw new Error('Could not load the bunny image'); });
     }
     create() {
-        this.add.image(259, 119, 'gear').setOrigin(0);
+        this.add.image(307, 161, 'bunny').setOrigin(0);
         this.game.events.once(Phaser.Core.Events.POST_RENDER, () => report('phaser'));
     }
 }

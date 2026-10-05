@@ -1,6 +1,6 @@
 import { Actor, CollisionType, Color, Engine, ImageSource, vec } from 'excalibur';
-import { runRenderBenchmark, SPRITE_SIZE, WIDTH, HEIGHT } from '../../shared/bunnies';
-import { GEAR } from '../../shared/image';
+import { runRenderBenchmark, WIDTH, HEIGHT } from '../../shared/bunnies';
+import { BUNNY } from '../../shared/image';
 
 const game = new Engine({
     width: WIDTH,
@@ -12,9 +12,9 @@ const game = new Engine({
     suppressPlayButton: true,
     suppressConsoleBootMessage: true,
 });
-const image = new ImageSource(GEAR);
+const image = new ImageSource(BUNNY);
 await Promise.all([image.load(), game.start()]);
-const sprite = image.toSprite({ destSize: { width: SPRITE_SIZE, height: SPRITE_SIZE } });
+const sprite = image.toSprite();
 const actors: Actor[] = [];
 
 void runRenderBenchmark('excalibur', {

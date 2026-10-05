@@ -1,5 +1,5 @@
 import { Actor, Color, Engine, ImageSource, vec } from 'excalibur';
-import { GEAR } from '../../shared/image';
+import { BUNNY } from '../../shared/image';
 import { report } from '../../shared/report';
 
 const game = new Engine({
@@ -14,9 +14,9 @@ const game = new Engine({
 });
 // Excalibur's loaders pad startup with fixed delays (500 ms after load, plus a play-button/audio-unlock
 // wait), so load the image directly and start without one, as its docs allow.
-const image = new ImageSource(GEAR);
+const image = new ImageSource(BUNNY);
 await Promise.all([image.load(), game.start()]);
-const actor = new Actor({ pos: vec(259, 119), anchor: vec(0, 0) });
+const actor = new Actor({ pos: vec(307, 161), anchor: vec(0, 0) });
 actor.graphics.use(image.toSprite());
 game.add(actor);
 game.once('postframe', () => report('excalibur'));

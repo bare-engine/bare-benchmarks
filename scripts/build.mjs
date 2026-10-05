@@ -12,7 +12,7 @@ await build({ configFile: 'vite.dashboard.config.mjs' }); // empties dist/, so i
 // Bare is a self-contained project in benchmarks/<bench>/bare and its Vite config keys off cwd, so build it from
 // there. Its asset step (buildAssets.cjs) runs so src/generated/assets.ts exists; it needs texturePackImages/ to
 // exist, and with the folder empty nothing is packed and index.html gets no <link rel=preload>: both benchmarks
-// inline the gear like every other engine.
+// inline the bunny like every other engine.
 for (const bench of ['startup', 'render']) {
   process.chdir(`benchmarks/${bench}/bare`);
   await mkdir('texturePackImages', { recursive: true });

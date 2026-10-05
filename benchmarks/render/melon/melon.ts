@@ -1,10 +1,10 @@
 import { Application, Sprite, Stage, WEBGL, event, loader, state } from 'melonjs';
-import { runRenderBenchmark, SPRITE_SCALE, WIDTH, HEIGHT } from '../../shared/bunnies';
-import { GEAR } from '../../shared/image';
+import { runRenderBenchmark, WIDTH, HEIGHT } from '../../shared/bunnies';
+import { BUNNY } from '../../shared/image';
 
 const app = new Application(WIDTH, HEIGHT, { parent: 'game', renderer: WEBGL, antiAlias: false, subPixel: true, scale: 1, backgroundColor: '#ffffff', prewarm: false });
 await app.init();
-await loader.preload([{ name: 'gear', type: 'image', src: GEAR }], undefined, false);
+await loader.preload([{ name: 'bunny', type: 'image', src: BUNNY }], undefined, false);
 
 const sprites: Sprite[] = [];
 const rotations: number[] = []; // melonJS rotates incrementally, so track what each sprite has been given
@@ -14,8 +14,7 @@ state.set(state.PLAY, new Stage({ onResetEvent: () => {
         setCount(sim) {
             while (sprites.length > sim.count) { app.world.removeChild(sprites.pop()!); rotations.pop(); }
             while (sprites.length < sim.count) {
-                const sprite = new Sprite(0, 0, { image: 'gear' });
-                sprite.scale(SPRITE_SCALE);
+                const sprite = new Sprite(0, 0, { image: 'bunny' });
                 app.world.addChild(sprite);
                 sprites.push(sprite);
                 rotations.push(0);

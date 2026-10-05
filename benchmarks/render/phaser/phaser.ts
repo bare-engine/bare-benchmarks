@@ -1,18 +1,18 @@
 import Phaser from 'phaser';
-import { runRenderBenchmark, SPRITE_SCALE, WIDTH, HEIGHT } from '../../shared/bunnies';
-import { GEAR } from '../../shared/image';
+import { runRenderBenchmark, WIDTH, HEIGHT } from '../../shared/bunnies';
+import { BUNNY } from '../../shared/image';
 
 class Bunnies extends Phaser.Scene {
     sprites: Phaser.GameObjects.Image[] = [];
     frameUpdate = () => {};
     preload() {
-        this.load.image('gear', GEAR);
+        this.load.image('bunny', BUNNY);
     }
     create() {
         void runRenderBenchmark('phaser', {
             setCount: sim => {
                 while (this.sprites.length > sim.count) this.sprites.pop()!.destroy();
-                while (this.sprites.length < sim.count) this.sprites.push(this.add.image(0, 0, 'gear').setScale(SPRITE_SCALE));
+                while (this.sprites.length < sim.count) this.sprites.push(this.add.image(0, 0, 'bunny'));
             },
             apply: sim => {
                 for (let i = 0; i < sim.count; i++) {
