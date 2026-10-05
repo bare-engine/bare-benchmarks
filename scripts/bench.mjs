@@ -64,7 +64,7 @@ try {
     if (!block.test(readme)) console.warn(`README.md has no <!-- ${type} --> … <!-- /${type} --> block; not updated.`);
     else {
         // A single "Tested <date>:" line above the images holds the date of the latest run.
-        const updated = readme.replace(block, (_, open, close) => `${open}\n![npm run bench ${type}](${file})\n${close}`);
+        const updated = readme.replace(block, (_, open, close) => `${open}\n![npm run bench ${type}](${file} "npm run bench ${type}")\n${close}`);
         await writeFile('README.md', updated.replace(/^Tested \d{4}-\d{2}-\d{2}:$/m, `Tested ${date}:`));
         console.log('Updated README.md');
     }
