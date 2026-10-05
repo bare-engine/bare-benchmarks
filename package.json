@@ -4,6 +4,7 @@
     "scripts": {
         "start": "npm run build && npm run preview",
         "build": "node scripts/build.mjs",
+        "render": "node scripts/render.mjs",
         "preview": "node scripts/serve.mjs",
         "dev": "vite --config vite.dashboard.config.mjs --open",
         "dev:bare": "cd benchmarks/startup/bare && vite --mode development",
