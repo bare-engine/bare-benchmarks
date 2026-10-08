@@ -1,18 +1,18 @@
-// npm run bench <startup|performance|bundle> [runs] [profile]
+// npm run bench <startup|performance|bundle|all> [runs] [profile]
 // Builds, runs the benchmark through the dashboard in a headless browser and saves just its title, description
 // and results as docs/<type>-<date>.png, then points README.md's <!-- type --> … <!-- /type --> block at that image.
+// "all" runs every benchmark in turn with its default runs and network profile.
 import { chromium } from '@playwright/test';
 import { spawn, spawnSync } from 'node:child_process';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 
 // runs: the choices in that benchmark's dashboard dropdown, first one the default.
 const types = { startup: { bench: 'startup', runs: ['30', '3', '10'] }, performance: { bench: 'render', runs: ['3', '1', '10'] }, bundle: { results: 'sizes' } };
-const [type, runs = types[type]?.runs?.[0], profile = 'none'] = process.argv.slice(2);
-const usage = 'Usage: npm run bench <startup|performance|bundle> [runs: startup 3|10|30 (30), performance 1|3|10 (3)] [profile: none|fast4g|slow4g|3g]';
-if (!Object.hasOwn(types, type)) { console.error(usage); process.exit(1); }
-if (types[type].bench && (!types[type].runs.includes(runs) || !['none', 'fast4g', 'slow4g', '3g'].includes(profile))) { console.error(usage); process.exit(1); }
-const { bench } = types[type];
-const results = types[type].results ?? `results-${bench}`;
+const [arg, argRuns, profile = 'none'] = process.argv.slice(2);
+const usage = 'Usage: npm run bench <startup|performance|bundle|all> [runs: startup 3|10|30 (30), performance 1|3|10 (3)] [profile: none|fast4g|slow4g|3g]';
+if (arg !== 'all' && !Object.hasOwn(types, arg)) { console.error(usage); process.exit(1); }
+if (arg === 'all' && argRuns !== undefined) { console.error('Usage: npm run bench all'); process.exit(1); }
+if (types[arg]?.bench && (!types[arg].runs.includes(argRuns ?? types[arg].runs[0]) || !['none', 'fast4g', 'slow4g', '3g'].includes(profile))) { console.error(usage); process.exit(1); }
 
 const built = spawnSync(process.execPath, ['scripts/build.mjs'], { stdio: 'inherit' });
 if (built.status !== 0) process.exit(built.status ?? 1);
@@ -22,6 +22,15 @@ const server = spawn(process.execPath, ['scripts/serve.mjs', '--port', String(po
 await new Promise(resolve => setTimeout(resolve, 1000));
 const browser = await chromium.launch({ channel: process.env.BENCHMARK_BROWSER || 'msedge', headless: true });
 try {
+    for (const type of arg === 'all' ? Object.keys(types) : [arg]) await run(type, argRuns ?? types[type].runs?.[0]);
+} finally {
+    await browser.close();
+    server.kill();
+}
+
+async function run(type, runs) {
+    const { bench } = types[type];
+    const results = types[type].results ?? `results-${bench}`;
     const page = await browser.newPage({ viewport: { width: 1200, height: 900 }, locale: 'en-US' });
     await page.goto(`http://127.0.0.1:${port}/`);
     if (bench) {
@@ -68,7 +77,5 @@ try {
         await writeFile('README.md', updated.replace(/^Tested \d{4}-\d{2}-\d{2}:$/m, `Tested ${date}:`));
         console.log('Updated README.md');
     }
-} finally {
-    await browser.close();
-    server.kill();
+    await page.close();
 }
