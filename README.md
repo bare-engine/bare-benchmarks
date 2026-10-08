@@ -2,16 +2,16 @@
 
 Run `npm install`, then `npm start` and open http://127.0.0.1:4173.
 
-Tested 2026-10-05:
+Tested 2026-10-08:
 
 <!-- startup -->
-![npm run bench startup](docs/startup-2026-10-05.png "npm run bench startup")
+![npm run bench startup](docs/startup-2026-10-08.png "npm run bench startup")
 <!-- /startup -->
 
 <!-- performance -->
-![npm run bench performance](docs/performance-2026-10-05.png "npm run bench performance")
+![npm run bench performance](docs/performance-2026-10-08.png "npm run bench performance")
 <!-- /performance -->
 
 <!-- bundle -->
-![npm run bench bundle](docs/bundle-2026-10-05.png "npm run bench bundle")
+![npm run bench bundle](docs/bundle-2026-10-08.png "npm run bench bundle")
 <!-- /bundle -->
