@@ -1,5 +1,6 @@
 # Web game engine benchmarks
-
+Written to compare against the <a href="https://github.com/bare-engine/bare-engine">Bare Engine</a>.
+<br><br><br>
 Run `npm install`, then `npm start` and open http://127.0.0.1:4173.
 
 Tested 2026-10-08:
